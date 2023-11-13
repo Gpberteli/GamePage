@@ -31,30 +31,47 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
             var user = await _context.Users.FindAsync(userId);
             if (user != null)
             {
-                //Chama o método de validação para garantir que as entradas do personagem sejam válidas.
+                // Chama o método de validação para garantir que as entradas do personagem sejam válidas.
                 ValidateCharacterInputs(character);
 
-                //Define o status do personagem e chama a classe Ex:( 1 = Assassin)
+                // Define o status do personagem e chama a classe (por exemplo, 1 = Assassin)
                 character.UserId = userId;
                 var characterClassType = GetCharacterClassType(character.ClassType);
                 var characterInfo = Activator.CreateInstance(characterClassType) as CharactersInfo;
                 characterInfo.InitializeStats();
                 character.CharStatus = characterInfo;
 
-                _context.Characters.Add(character);
-                await _context.SaveChangesAsync();
+                // Use comandos SQL para inserir o personagem
+                string insertQuery = @"INSERT INTO Charact (CharName, CharClass, CharSex, ClassId, UserId)
+                                   VALUES (@CharName, @CharClass, @CharSex, @ClassId, @UserId);
+                                   SELECT SCOPE_IDENTITY();";
+
+                using (var connection = _dapperContext.CreateConnection())
+                {
+                    // Execute o comando SQL e obtenha o ID do personagem recém-criado
+                    long newCharId = await connection.ExecuteScalarAsync<long>(insertQuery, new
+                    {
+                        CharName = character.CharName,
+                        CharClass = character.ClassType.ToString(),
+                        CharSex = character.CharSex.ToString(),
+                        ClassId = character.ClassId,
+                        UserId = character.UserId
+                    });
+
+                    // Atribua o ID gerado ao objeto Character
+                    character.CharId = newCharId;
+                }
 
                 return character;
             }
 
             return null;
         }
-        catch (DbUpdateException ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Erro em criar personagem.");
             throw;
         }
-
     }
 
     private void ValidateCharacterInputs(Character character)
