@@ -1,0 +1,23 @@
+USE [DBJogosAPI]
+GO
+
+/****** Object:  Table [dbo].[Users]    Script Date: 09/11/2023 12:25:32 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Users](
+	[UserId] [bigint] IDENTITY(1,1) NOT NULL,
+	[UserName] [nvarchar](255) NOT NULL,
+	[UserEmail] [nvarchar](255) NOT NULL,
+	[UserPassword] [nvarchar](16) NOT NULL,
+	[NickName] [varchar](20) NOT NULL,
+ CONSTRAINT [Pk_UserId] PRIMARY KEY CLUSTERED 
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
