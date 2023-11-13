@@ -6,58 +6,58 @@ using Microsoft.AspNetCore.Mvc;
 namespace JogoRpg.Api.Application.Controllers;
 
 [ApiController]
-    [Route("v1/[controller]")]
-    [Consumes("application/json")]
-    [Produces("application/json")]
-    public class CharacterController : ControllerBase
-    {
-        private readonly ICharacterService _characterService;
+[Route("v1/[controller]")]
+[Consumes("application/json")]
+[Produces("application/json")]
+public class CharacterController : ControllerBase
+{
+    private readonly ICharacterService _characterService;
 
-        public CharacterController(ICharacterService characterService)
-        {
-            _characterService = characterService;
-        }
+    public CharacterController(ICharacterService characterService)
+    {
+        _characterService = characterService;
+    }
 
     /// <summary>
     /// Retorna Tabela de personagens
     /// </summary>
     /// <returns></returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("")]
-        public async Task<IActionResult> Get()
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("")]
+    public async Task<IActionResult> Get()
+    {
+        try
         {
-            try
-            {
-                var characters = await _characterService.Get();
-                return Ok(new ResultResponse { Success = true, Data = characters });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ResultResponse { Error = ex.Message });
-            }
+            var characters = await _characterService.Get();
+            return Ok(new ResultResponse { Success = true, Data = characters });
         }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResultResponse { Error = ex.Message });
+        }
+    }
 
     /// <summary>
     /// Retorna o personagem pelo id
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(long id)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> Get(long id)
+    {
+        try
         {
-            try
-            {
-                var character = await _characterService.Get(id);
-                return Ok(new ResultResponse { Success = true, Data = character });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ResultResponse { Error = ex.Message });
-            }
+            var character = await _characterService.Get(id);
+            return Ok(new ResultResponse { Success = true, Data = character });
         }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResultResponse { Error = ex.Message });
+        }
+    }
 
     /// <summary>
     /// Cria Personagem
@@ -65,9 +65,9 @@ namespace JogoRpg.Api.Application.Controllers;
     /// <param name="userId"></param>
     /// <param name="character"></param>
     /// <returns></returns>
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
     public async Task<IActionResult> CreateCharacter(long userId, [FromBody] Character character)
     {
@@ -78,7 +78,7 @@ namespace JogoRpg.Api.Application.Controllers;
             return Ok(createdCharacter);
         }
 
-        return BadRequest("Usuário não encontrado."); 
+        return BadRequest("Usuário não encontrado.");
     }
 
     /// <summary>
@@ -88,46 +88,46 @@ namespace JogoRpg.Api.Application.Controllers;
     /// <param name="character"></param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(long id, [FromBody] Character character)
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Put(long id, [FromBody] Character character)
+    {
+        try
         {
-            try
-            {
-                character.CharId = id;
-                var updatedCharacter = await _characterService.Update(character);
-                return StatusCode(StatusCodes.Status202Accepted, new ResultResponse { Success = true, Data = updatedCharacter });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ResultResponse { Error = ex.Message });
-            }
+            character.CharId = id;
+            var updatedCharacter = await _characterService.Update(character);
+            return StatusCode(StatusCodes.Status202Accepted, new ResultResponse { Success = true, Data = updatedCharacter });
         }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResultResponse { Error = ex.Message });
+        }
+    }
 
     /// <summary>
     /// Deleta personagem
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-        [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(long id)
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(long id)
+    {
+        try
         {
-            try
-            {
-                var character = await _characterService.Get(id);
-                if (character == null)
-                    return NotFound();
+            var character = await _characterService.Get(id);
+            if (character == null)
+                return NotFound();
 
-                await _characterService.Remove(character);
-                return StatusCode(StatusCodes.Status202Accepted);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ResultResponse { Success = false, Error = ex.Message });
-            }
+            await _characterService.Remove(character);
+            return StatusCode(StatusCodes.Status202Accepted);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ResultResponse { Success = false, Error = ex.Message });
         }
     }
+}

@@ -11,14 +11,14 @@ public abstract class BaseRepository<TEntity> : IDisposable, IBaseRepository<TEn
 
     protected BaseRepository(EntityContext context, DapperContext dapperContext)
     {
-        
+
         _context = context;
         _dapperContext = dapperContext;
     }
 
     public virtual async Task<IEnumerable<TEntity>> GetAsync()
     {
-        return  _context.Set<TEntity>().ToList();
+        return _context.Set<TEntity>().ToList();
     }
 
     public virtual async Task<TEntity> GetAsync(long id)
@@ -28,13 +28,13 @@ public abstract class BaseRepository<TEntity> : IDisposable, IBaseRepository<TEn
 
     public virtual async Task<TEntity> AddAsync(TEntity obj)
     {
-        try 
+        try
         {
             await _context.Set<TEntity>().AddAsync(obj);
             _context.SaveChanges();
             return obj;
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             throw ex;
         }

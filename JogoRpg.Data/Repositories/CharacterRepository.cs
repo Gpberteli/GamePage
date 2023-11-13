@@ -27,12 +27,14 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
     {
         try
         {
+            // Tenta encontrar um usuário com o userId especificado no banco de dados.
             var user = await _context.Users.FindAsync(userId);
             if (user != null)
             {
-                // Validate and sanitize character-specific inputs
-                ValidateAndSanitizeCharacterInputs(character);
+                //Chama o método de validação para garantir que as entradas do personagem sejam válidas.
+                ValidateCharacterInputs(character);
 
+                //Define o status do personagem e chama a classe Ex:( 1 = Assassin)
                 character.UserId = userId;
                 var characterClassType = GetCharacterClassType(character.ClassType);
                 var characterInfo = Activator.CreateInstance(characterClassType) as CharactersInfo;
@@ -49,13 +51,13 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
         }
         catch (DbUpdateException ex)
         {
-            _logger.LogError(ex, "Erro em criar personagem (DbUpdateException).");
+            _logger.LogError(ex, "Erro em criar personagem.");
             throw;
         }
 
     }
 
-    private void ValidateAndSanitizeCharacterInputs(Character character)
+    private void ValidateCharacterInputs(Character character)
     {
         if (string.IsNullOrWhiteSpace(character.CharName))
         {
@@ -86,7 +88,7 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
         return null;
     }
 
-      public async Task<IEnumerable<Character>> Get()
+    public async Task<IEnumerable<Character>> Get()
     {
         string query = @"select 
                                 o.CharId,
@@ -117,7 +119,7 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
 
         using (var connection = _dapperContext.CreateConnection())
         {
-            return await connection.QueryFirstOrDefaultAsync<Character>(query, new {CharId = charId });
+            return await connection.QueryFirstOrDefaultAsync<Character>(query, new { CharId = charId });
         }
     }
 
@@ -145,15 +147,15 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
             return character;
         }
     }
-    
+
 
     public async Task<Character> RemoveAsync(Character character)
     {
         string query = @" Delete From Charact Where CharId = @CharId";
 
 
-    using (var connection = _dapperContext.CreateConnection())
-    {
+        using (var connection = _dapperContext.CreateConnection())
+        {
             await connection.ExecuteAsync(query, character);
             return character;
         }

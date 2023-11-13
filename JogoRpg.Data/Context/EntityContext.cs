@@ -9,9 +9,7 @@ namespace JogoRpg.Data.Context
         private readonly IConfiguration _configuration;
 
         public EntityContext(DbContextOptions<EntityContext> options)
-            : base(options)
-        {
-        }
+            : base(options){ }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Character> Characters { get; set; }

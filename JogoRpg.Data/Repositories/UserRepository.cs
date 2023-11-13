@@ -46,7 +46,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
         }
         catch (DbUpdateException ex)
         {
-            _logger.LogError(ex, "Erro ao adicionar usuário ao banco de dados (DbUpdateException).");
+            _logger.LogError(ex, "Erro ao adicionar usuário ao banco de dados.");
             throw;
         }
         catch (Exception ex)

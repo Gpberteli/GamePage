@@ -1,6 +1,6 @@
 ﻿namespace JogoRpg.Domain.Enum;
 
-public enum  Sex
+public enum Sex
 {
     Feminino,
     Masculino

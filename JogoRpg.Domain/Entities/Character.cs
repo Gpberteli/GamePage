@@ -22,7 +22,7 @@ public class Character
     }
 
     public ClassReference? ClassReference { get; set; }
-        
+
     public User? User { get; set; }
     public long UserId { get; set; }
 

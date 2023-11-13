@@ -46,4 +46,4 @@ public class CharacterService : BaseService<Character>, ICharacterService
         return null;
     }
 }
-    
+

@@ -6,7 +6,6 @@ namespace JogoRpg.Domain.Entities.CharacterClasses;
 [CharacterClass(CharacterClassType.Assassin)]
 public class Assassin : CharactersInfo
 {
-
     public Assassin()
     {
         InitializeStats();

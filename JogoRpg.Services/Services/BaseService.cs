@@ -11,7 +11,8 @@ public class BaseService<TEntity> : IDisposable, IBaseService<TEntity> where TEn
     {
         return await _repository.AddAsync(obj);
     }
-        public BaseService(IBaseRepository<TEntity> Repository)
+
+    public BaseService(IBaseRepository<TEntity> Repository)
     {
         _repository = Repository;
     }
@@ -25,6 +26,7 @@ public class BaseService<TEntity> : IDisposable, IBaseService<TEntity> where TEn
     {
         return await _repository.GetAsync();
     }
+
     public virtual async Task<TEntity> Update(TEntity obj)
     {
         return await _repository.UpdateAsync(obj);
@@ -34,10 +36,9 @@ public class BaseService<TEntity> : IDisposable, IBaseService<TEntity> where TEn
     {
         return await _repository.RemoveAsync(obj);
     }
+
     public void Dispose()
     {
 
     }
-
-
 }
