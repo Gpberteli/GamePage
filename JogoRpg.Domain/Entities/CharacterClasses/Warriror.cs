@@ -13,7 +13,7 @@ public class Warrior : CharactersInfo
         Strong = 10;
         Speed = 2;
         Vitality = 7;
-        Inteligence = 1;
+        Intelligence = 1;
         Dexterity = 2;
         Stamina = 8;
 

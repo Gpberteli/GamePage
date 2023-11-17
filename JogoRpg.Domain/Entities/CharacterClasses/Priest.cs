@@ -13,7 +13,7 @@ public class Priest : CharactersInfo
         Strong = 1;
         Speed = 1;
         Vitality = 7;
-        Inteligence = 10;
+        Intelligence = 10;
         Dexterity = 8;
         Stamina = 3;
 

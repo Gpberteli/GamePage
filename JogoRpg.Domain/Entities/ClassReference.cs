@@ -1,9 +1,11 @@
-﻿namespace JogoRpg.Domain.Entities
-{
-    public class ClassReference
+﻿using JogoRpg.Domain.DTO;
+
+namespace JogoRpg.Domain.Entities
     {
-        public int ClassId { get; set; }
-        public string? ClassName { get; set; }
-        public ICollection<CharacterDTO>? Characters { get; set; }
+        public class ClassReference
+        {
+            public int ClassId { get; set; }
+            public string? ClassName { get; set; }
+            public ICollection<CharacterDTO>? Characters { get; set; }
+        }
     }
-}

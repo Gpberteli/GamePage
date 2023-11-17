@@ -13,7 +13,7 @@ public class Assassin : CharactersInfo
         Strong = 7;
         Speed = 10;
         Vitality = 4;
-        Inteligence = 2;
+        Intelligence = 2;
         Dexterity = 3;
         Stamina = 2;
 

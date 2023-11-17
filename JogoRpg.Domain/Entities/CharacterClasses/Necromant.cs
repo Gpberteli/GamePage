@@ -13,7 +13,7 @@ public class Necromant : CharactersInfo
         Strong = 1;
         Speed = 3;
         Vitality = 7;
-        Inteligence = 10;
+        Intelligence = 10;
         Dexterity = 7;
         Stamina = 2;
 

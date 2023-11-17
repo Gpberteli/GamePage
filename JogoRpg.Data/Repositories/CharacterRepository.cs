@@ -1,4 +1,5 @@
 ﻿using JogoRpg.Data.Context;
+using JogoRpg.Domain.DTO;
 using JogoRpg.Domain.Entities;
 using JogoRpg.Domain.Entities.CharacterClass;
 using JogoRpg.Domain.Interface.Repositories;
@@ -94,7 +95,6 @@ public class CharacterRepository : BaseRepository<CharacterDTO>, ICharacterRepos
         {
             try
             {
-
                 if (character == null)
                 {
                     throw new ArgumentNullException(nameof(character), "Objeto de personagem não pode ser nulo.");
@@ -102,44 +102,56 @@ public class CharacterRepository : BaseRepository<CharacterDTO>, ICharacterRepos
 
                 // Tenta encontrar um usuário com o userId especificado no banco de dados.
                 var user = await _context.Users.FindAsync(userId);
-                if (user != null)
+                if (user == null)
                 {
-                    // Chama o método de validação para garantir que as entradas do personagem sejam válidas.
-                    ValidateCharacterInputs(character);
+                    throw new InvalidOperationException($"Usuário com ID {userId} não encontrado.");
+                }
 
-                    // Define o status do personagem e chama a classe (por exemplo, 1 = Assassin)
-                    character.UserId = userId;
-                    var characterClassType = GetCharacterClassType(character.ClassType);
-                    var characterInfo = Activator.CreateInstance(characterClassType) as CharactersInfo;
-                    characterInfo.InitializeStats();
-                    character.CharStatus = characterInfo;
+                // Chama o método de validação para garantir que as entradas do personagem sejam válidas.
+                ValidateCharacterInputs(character);
 
-                    // Use comandos SQL para inserir o personagem
-                    string insertQuery = @"INSERT INTO Charact (CharName, CharClass, CharSex, ClassId, UserId)
+                // Define o status do personagem e chama a classe (por exemplo, 1 = Assassin)
+                character.UserId = userId;
+                var characterClassType = GetCharacterClassType(character.ClassType);
+                var characterInfo = Activator.CreateInstance(characterClassType) as CharactersInfo;
+                characterInfo.InitializeStats();
+                character.CharStatus = new CharacterInfosDTO
+                {
+                    Strong = characterInfo.Strong,
+                    Speed = characterInfo.Speed,
+                    Vitality = characterInfo.Vitality,
+                    Intelligence = characterInfo.Intelligence,
+                    Dexterity = characterInfo.Dexterity,
+                    Stamina = characterInfo.Stamina,
+                    Description = characterInfo.Description
+                };
+
+                // Use comandos SQL para inserir o personagem
+                string insertQuery = @"INSERT INTO Charact (CharName, CharClass, CharSex, ClassId, UserId)
                                    VALUES (@CharName, @CharClass, @CharSex, @ClassId, @UserId);
                                    SELECT SCOPE_IDENTITY();";
 
-                    using (var connection = _dapperContext.CreateConnection())
+                using (var connection = _dapperContext.CreateConnection())
+                {
+                    // Execute o comando SQL e obtenha o ID do personagem recém-criado
+                    var parameters = new
                     {
-                        // Execute o comando SQL e obtenha o ID do personagem recém-criado
-                        long newCharId = await connection.ExecuteScalarAsync<long>(insertQuery, new
-                        {
-                            CharName = character.CharName,
-                            CharClass = character.ClassType.ToString(),
-                            CharSex = character.CharSex.ToString(),
-                            ClassId = character.ClassId,
-                            UserId = character.UserId
-                        });
+                        CharName = character.CharName,
+                        CharClass = character.ClassType.ToString(),
+                        CharSex = character.CharSex.ToString(),
+                        ClassId = character.ClassId,
+                        UserId = character.UserId
+                    };
 
-                        // Atribua o ID gerado ao objeto Character
-                        character.CharId = newCharId;
-                    }
+                    long newCharId = await connection.ExecuteScalarAsync<long>(insertQuery, parameters);
 
-                    transaction.Commit();
-                    return character;
+                    // Atribua o ID gerado ao objeto Character
+                    character.CharId = newCharId;
                 }
 
-                return null;
+                // Não é necessário chamar transaction.Commit() explicitamente, pois o using já faz isso ao sair do bloco.
+
+                return character;
             }
             catch (Exception ex)
             {
@@ -204,3 +216,4 @@ public class CharacterRepository : BaseRepository<CharacterDTO>, ICharacterRepos
             }
         }
     }
+}

@@ -3,22 +3,25 @@ using JogoRpg.Data.Context;
 using JogoRpg.Domain.DTO;
 using JogoRpg.Domain.Entities;
 
-public class MeuServico
+namespace JogoRpg.Data.Services
 {
-    private readonly IMapper _mapper;
-    private readonly EntityContext _context;
-
-    public MeuServico(IMapper mapper, EntityContext context)
+    public class MeuServico
     {
-        _mapper = mapper;
-        _context = context;
-    }
+        private readonly IMapper _mapper;
+        private readonly EntityContext _context;
 
-    public JogoRpg.Domain.DTO.CharacterDTO ObterCharacterDTO(int characterId)
-    {
-        JogoRpg.Domain.Entities.CharacterDTO character = _context.Characters.FirstOrDefault(c => c.CharId == characterId);
-        JogoRpg.Domain.DTO.CharacterDTO characterDTO = _mapper.Map<JogoRpg.Domain.DTO.CharacterDTO>(character);
+        public MeuServico(IMapper mapper, EntityContext context)
+        {
+            _mapper = mapper;
+            _context = context;
+        }
 
-        return characterDTO;
+        public CharacterDTO ObterCharacterDTO(int characterId)
+        {
+            CharacterDTO character = _context.Characters.FirstOrDefault(c => c.CharId == characterId);
+            CharacterDTO characterDTO = _mapper.Map<CharacterDTO>(character);
+
+            return characterDTO;
+        }
     }
 }

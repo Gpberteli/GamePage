@@ -13,7 +13,7 @@ public class Witch : CharactersInfo
         Strong = 1;
         Speed = 2;
         Vitality = 5;
-        Inteligence = 10;
+        Intelligence = 10;
         Dexterity = 10;
         Stamina = 2;
 

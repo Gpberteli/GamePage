@@ -7,7 +7,8 @@ using JogoRpg.Domain.Interface.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-public class UserRepository : BaseRepository<User>, IUserRepository
+
+public class UserRepository : BaseRepository<UserDTO>, IUserRepository
 {
     private readonly EntityContext _context;
     private readonly DapperContext _dapperContext;
@@ -40,29 +41,62 @@ public class UserRepository : BaseRepository<User>, IUserRepository
         }
     }
 
-
-    public async Task<UserDTO> Add(UserCreateDTO userCreateDTO)
+    public async Task<UserDTO> GetUserWithCharacters(long userId)
     {
-        if (userCreateDTO == null)
+        string query = @"
+        SELECT *
+        FROM Users u
+        LEFT JOIN Characters c ON u.UserId = c.UserId
+        WHERE u.UserId = @UserId;
+    ";
+
+        using (var connection = _dapperContext.CreateConnection())
         {
-            throw new ArgumentNullException(nameof(userCreateDTO), "Objeto de usuário para adição não pode ser nulo.");
+            var userDictionary = new Dictionary<long, UserDTO>();
+            var result = await connection.QueryAsync<UserDTO, CharacterDTO, UserDTO>(
+                query,
+                (user, character) =>
+                {
+                    if (!userDictionary.TryGetValue(user.UserId, out var currentUser))
+                    {
+                        currentUser = user;
+                        currentUser.Characters = new List<CharacterDTO>();
+                        userDictionary.Add(currentUser.UserId, currentUser);
+                    }
+
+                    currentUser.Characters.Add(character);
+                    return currentUser;
+                },
+                new { UserId = userId },
+                splitOn: "CharacterId"
+            );
+
+            return result.FirstOrDefault();
+        }
+    }
+
+    public async Task<UserDTO> Add(string userName, string nickName, string userEmail, string userPassword)
+    {
+        if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(userPassword))
+        {
+            throw new ArgumentException("O nome de usuário e a senha são obrigatórios para a criação de um usuário.");
         }
 
         // Hash da senha
-        string hashedPassword = HashAndSaltPassword(userCreateDTO.UserPassword);
+        string hashedPassword = HashAndSaltPassword(userPassword);
 
         string query = @"INSERT INTO Users (UserName, NickName, UserEmail, UserPassword)
-                         VALUES (@UserName, @NickName, @UserEmail, @UserPassword);
-                         SELECT SCOPE_IDENTITY();";
+                     VALUES (@UserName, @NickName, @UserEmail, @UserPassword);
+                     SELECT SCOPE_IDENTITY();";
 
         using (var connection = _dapperContext.CreateConnection())
         {
             // Execute o comando SQL e obtenha o ID do usuário recém-adicionado
             long newUserId = await connection.ExecuteScalarAsync<long>(query, new
             {
-                UserName = userCreateDTO.UserName,
-                NickName = userCreateDTO.NickName,
-                UserEmail = userCreateDTO.UserEmail,
+                UserName = userName,
+                NickName = nickName,
+                UserEmail = userEmail,
                 UserPassword = hashedPassword
             });
 
@@ -70,9 +104,9 @@ public class UserRepository : BaseRepository<User>, IUserRepository
             return new UserDTO
             {
                 UserId = newUserId,
-                UserName = userCreateDTO.UserName,
-                NickName = userCreateDTO.NickName,
-                UserEmail = userCreateDTO.UserEmail
+                UserName = userName,
+                NickName = nickName,
+                UserEmail = userEmail
             };
         }
     }
@@ -106,7 +140,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
 
     // Adicione outros métodos conforme necessário, utilizando Dapper para as operações no banco de dados.
 
-    public async Task<User> Remove(long userId)
+    public async Task<UserDTO> Remove(long userId)
     {
         string query = "DELETE FROM Users WHERE UserId = @UserId";
 
@@ -118,7 +152,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
         return null; // Você pode retornar o usuário removido se necessário
     }
 
-    public async Task<User> Authenticate(string username, string password)
+    public async Task<UserDTO> Authenticate(string username, string password)
     {
         string hashedPassword = HashAndSaltPassword(password);
 
@@ -126,7 +160,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
 
         using (var connection = _dapperContext.CreateConnection())
         {
-            return await connection.QueryFirstOrDefaultAsync<User>(query, new
+            return await connection.QueryFirstOrDefaultAsync<UserDTO>(query, new
             {
                 UserName = username,
                 UserPassword = hashedPassword

@@ -13,7 +13,7 @@ public class Druid : CharactersInfo
         Strong = 1;
         Speed = 2;
         Vitality = 8;
-        Inteligence = 9;
+        Intelligence = 9;
         Dexterity = 7;
         Stamina = 3;
 

@@ -2,18 +2,19 @@
 using Microsoft.Extensions.Configuration;
 using System.Data;
 
-namespace JogoRpg.Data.Context;
-
-public class DapperContext
+namespace JogoRpg.Data.Context
 {
-    private readonly IConfiguration _configuration;
-    private readonly string _connectionstring;
-
-    public DapperContext(IConfiguration configuration)
+    public class DapperContext
     {
-        _configuration = configuration;
-        _connectionstring = _configuration.GetConnectionString("SqlConnection");
-    }
+        private readonly IConfiguration _configuration;
+        private readonly string _connectionstring;
 
-    public IDbConnection CreateConnection() => new SqlConnection(_connectionstring);
+        public DapperContext(IConfiguration configuration)
+        {
+            _configuration = configuration;
+            _connectionstring = _configuration.GetConnectionString("SqlConnection");
+        }
+
+        public IDbConnection CreateConnection() => new SqlConnection(_connectionstring);
+    }
 }

@@ -1,14 +1,17 @@
 ﻿using AutoMapper;
 using JogoRpg.Domain.DTO;
 using JogoRpg.Domain.Entities;
+using JogoRpg.Domain.Entities.CharacterClass;
 
-namespace JogoRpg.Data.Mapping;
-
-public class MappingProfile : Profile
+namespace JogoRpg.Data.Mapping
 {
-    public MappingProfile()
+    public class MappingProfile : Profile
     {
-        CreateMap<CharacterDTO, CharacterDTO>();
-        CreateMap<User, UserDTO>();
+        public MappingProfile()
+        {
+            CreateMap<CharacterDTO, CharacterDTO>();
+            CreateMap<User, UserDTO>();
+            CreateMap<CharactersInfo, CharacterInfosDTO>();
+        }
     }
 }

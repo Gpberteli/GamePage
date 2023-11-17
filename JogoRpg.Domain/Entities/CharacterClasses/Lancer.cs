@@ -13,7 +13,7 @@ public class Lancer : CharactersInfo
         Strong = 8;
         Speed = 7;
         Vitality = 4;
-        Inteligence = 1;
+        Intelligence = 1;
         Dexterity = 6;
         Stamina = 4;
 

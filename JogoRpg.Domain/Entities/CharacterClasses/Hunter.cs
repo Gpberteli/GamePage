@@ -13,7 +13,7 @@ public class Hunter : CharactersInfo
         Strong = 1;
         Speed = 7;
         Vitality = 3;
-        Inteligence = 1;
+        Intelligence = 1;
         Dexterity = 10;
         Stamina = 8;
 

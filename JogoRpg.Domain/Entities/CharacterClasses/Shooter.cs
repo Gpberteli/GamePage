@@ -13,7 +13,7 @@ public class Shooter : CharactersInfo
         Strong = 1;
         Speed = 9;
         Vitality = 3;
-        Inteligence = 1;
+        Intelligence = 1;
         Dexterity = 10;
         Stamina = 6;
 

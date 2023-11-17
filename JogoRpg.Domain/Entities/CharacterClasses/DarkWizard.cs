@@ -13,7 +13,7 @@ public class DarkWizard : CharactersInfo
         Strong = 1;
         Speed = 2;
         Vitality = 6;
-        Inteligence = 10;
+        Intelligence = 10;
         Dexterity = 9;
         Stamina = 2;
 

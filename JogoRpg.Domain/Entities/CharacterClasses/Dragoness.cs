@@ -13,7 +13,7 @@ public class Dragoness : CharactersInfo
         Strong = 7;
         Speed = 5;
         Vitality = 5;
-        Inteligence = 5;
+        Intelligence = 5;
         Dexterity = 3;
         Stamina = 5;
 

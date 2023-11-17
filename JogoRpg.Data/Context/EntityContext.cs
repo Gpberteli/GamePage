@@ -1,4 +1,5 @@
-﻿using JogoRpg.Domain.Entities;
+﻿using JogoRpg.Domain.DTO;
+using JogoRpg.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -9,7 +10,7 @@ namespace JogoRpg.Data.Context
         private readonly IConfiguration _configuration;
 
         public EntityContext(DbContextOptions<EntityContext> options)
-            : base(options){ }
+            : base(options) { }
 
         public DbSet<User> Users { get; set; }
         public DbSet<CharacterDTO> Characters { get; set; }

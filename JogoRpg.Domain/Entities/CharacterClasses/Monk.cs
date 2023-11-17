@@ -13,7 +13,7 @@ public class Monk : CharactersInfo
         Strong = 7;
         Speed = 7;
         Vitality = 4;
-        Inteligence = 5;
+        Intelligence = 5;
         Dexterity = 3;
         Stamina = 4;
 

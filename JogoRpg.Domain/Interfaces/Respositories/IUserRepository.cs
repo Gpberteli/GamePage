@@ -3,9 +3,8 @@ using JogoRpg.Domain.Entities;
 
 namespace JogoRpg.Domain.Interface.Repositories;
 
-public interface IUserRepository : IBaseRepository<User>
+public interface IUserRepository : IBaseRepository<UserDTO>
 {
-    Task<User> AddUser(UserCreateDTO userCreateDTO);
-    Task<User> GetUserWithCharacters(long userId);
-    Task<User> Authenticate(string username, string password);
+    Task<UserDTO> GetUserWithCharacters(long userId);
+    Task<UserDTO> Authenticate(string username, string password);
 }
