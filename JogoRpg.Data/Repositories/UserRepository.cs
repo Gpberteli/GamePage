@@ -1,11 +1,9 @@
-﻿using Amazon.Runtime.Internal.Util;
-using JogoRpg.Data.Context;
+﻿using JogoRpg.Data.Context;
 using JogoRpg.Data.Repositories;
 using JogoRpg.Domain.Entities;
 using JogoRpg.Domain.Interface.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Crypto.Generators;
 
 public class UserRepository : BaseRepository<User>, IUserRepository
 {
@@ -36,7 +34,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
     }
 
 
-    public async Task<User> AddAsync(User user)
+    public async Task<User> Add(User user)
     {
         try
         {
@@ -56,13 +54,13 @@ public class UserRepository : BaseRepository<User>, IUserRepository
         }
     }
 
-    public async Task<User> UpdateAsync(User user)
+    public async Task<User> Update(User user)
     {
         _context.Entry(user).State = EntityState.Modified;
         await _context.SaveChangesAsync();
         return user;
     }
-    public async Task<User> RemoveAsync(long userId)
+    public async Task<User> Remove(long userId)
     {
         var user = await _context.Users.FindAsync(userId);
         if (user != null)

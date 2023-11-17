@@ -2,11 +2,11 @@
 
 public interface IBaseRepository<TEntity> where TEntity : class
 {
-    Task<IEnumerable<TEntity>> GetAsync();
-    Task<TEntity> GetAsync(long id);
-    Task<TEntity> AddAsync(TEntity obj);
-    Task<TEntity> UpdateAsync(TEntity obj);
-    Task<TEntity> RemoveAsync(TEntity obj);
+    Task<IEnumerable<TEntity>> Get();
+    Task<TEntity> Get(long id);
+    Task<TEntity> Add(TEntity obj);
+    Task<TEntity> Update(TEntity obj);
+    Task<TEntity> Remove(TEntity obj);
 
     void Dispose();
 

@@ -2,8 +2,6 @@
 using JogoRpg.Domain.Interface.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace JogoRpg.Data.Repositories;
-
 public abstract class BaseRepository<TEntity> : IDisposable, IBaseRepository<TEntity> where TEntity : class
 {
     private readonly EntityContext _context;
@@ -11,67 +9,85 @@ public abstract class BaseRepository<TEntity> : IDisposable, IBaseRepository<TEn
 
     protected BaseRepository(EntityContext context, DapperContext dapperContext)
     {
-
         _context = context;
         _dapperContext = dapperContext;
     }
 
-    public virtual async Task<IEnumerable<TEntity>> GetAsync()
+    public virtual async Task<IEnumerable<TEntity>> Get()
     {
         return _context.Set<TEntity>().ToList();
     }
 
-    public virtual async Task<TEntity> GetAsync(long id)
+    public virtual async Task<TEntity> Get(long id)
     {
         return await _context.Set<TEntity>().FindAsync(id);
     }
 
-    public virtual async Task<TEntity> AddAsync(TEntity obj)
+    public virtual async Task<TEntity> Add(TEntity obj)
     {
-        try
+        using (var transaction = _context.Database.BeginTransaction())
         {
-            await _context.Set<TEntity>().AddAsync(obj);
-            _context.SaveChanges();
-            return obj;
-        }
-        catch (Exception ex)
-        {
-            throw ex;
+            try
+            {
+                await _context.Set<TEntity>().AddAsync(obj);
+                _context.SaveChanges();
+                transaction.Commit();
+                return obj;
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw ex;
+            }
         }
     }
 
-    public virtual async Task<TEntity> UpdateAsync(TEntity obj)
+    public virtual async Task<TEntity> Update(TEntity obj)
     {
-        try
+        if (obj == null)
         {
-            _context.Entry(obj).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return obj;
+            throw new ArgumentNullException(nameof(obj), "Objeto de atualização não pode ser nulo.");
         }
-        catch (Exception ex)
+
+        using (var transaction = _context.Database.BeginTransaction())
         {
-            throw ex;
+            try
+            {
+                _context.Entry(obj).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                transaction.Commit();
+                return obj;
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw ex;
+            }
         }
     }
 
-    public async Task<TEntity> RemoveAsync(TEntity obj)
+    public async Task<TEntity> Remove(TEntity obj)
     {
-        try
+        using (var transaction = _context.Database.BeginTransaction())
         {
-            await this.UpdateAsync(obj);
-            _context.Set<TEntity>().Remove(obj);
-            _context.SaveChanges();
-            return obj;
-        }
-        catch (Exception ex)
-        {
-            throw ex;
+            try
+            {
+                await this.Update(obj);
+                _context.Set<TEntity>().Remove(obj);
+                _context.SaveChanges();
+                transaction.Commit();
+                return obj;
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw ex;
+            }
         }
     }
+
     public virtual void Dispose()
     {
         _context.Dispose();
     }
-
 }
-

@@ -2,7 +2,7 @@
 
 namespace JogoRpg.Domain.Interface.Services;
 
-public interface IUserService : IBaseService<User>
+public interface IUserService : IBaseService<UserDTO>
 {
-    Task<User> GetUserWithCharacters(long userId);
+    Task<UserDTO> GetUserWithCharacters(long userId);
 }

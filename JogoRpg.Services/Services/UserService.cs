@@ -23,21 +23,21 @@ public class UserService : BaseService<User>, IUserService
 
     public override async Task<User> Add(User user)
     {
-        return await _userRepository.AddAsync(user);
+        return await _userRepository.Add(user);
     }
 
     public override async Task<User> Get(long userId)
     {
-        return await _userRepository.GetAsync(userId);
+        return await _userRepository.Get(userId);
     }
 
     public override async Task<User> Update(User user)
     {
-        return await _userRepository.UpdateAsync(user);
+        return await _userRepository.Update(user);
     }
 
     public async Task<User> Remove(long userId)
     {
-        return await _userRepository.RemoveAsync(userId);
+        return await _userRepository.Remove(userId);
     }
 }

@@ -1,4 +1,5 @@
-﻿using JogoRpg.Domain.Entities;
+﻿using JogoRpg.Domain.DTO;
+using JogoRpg.Domain.Entities;
 
 namespace JogoRpg.Domain.Interface.Services;
 

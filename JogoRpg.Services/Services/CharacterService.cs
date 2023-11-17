@@ -3,45 +3,50 @@ using JogoRpg.Domain.Interface.Repositories;
 using JogoRpg.Domain.Interface.Services;
 using static JogoRpg.Services.Services.CharacterService;
 using System;
+using AutoMapper;
+using JogoRpg.Domain.DTO;
 
 namespace JogoRpg.Services.Services;
 
 public class CharacterService : BaseService<Character>, ICharacterService
 {
     private readonly ICharacterRepository _characterRepository;
-
-    public CharacterService(ICharacterRepository characterRepository)
+    private readonly IMapper _mapper;
+    public CharacterService(ICharacterRepository characterRepository, IMapper mapper)
         : base(characterRepository)
     {
         _characterRepository = characterRepository;
+        _mapper = mapper;
     }
 
     public async Task<IEnumerable<Character>> Get()
     {
-        return await _characterRepository.GetAsync();
+        var characterEntities = await _characterRepository.Get();
+        return _mapper.Map<IEnumerable<Character>>(characterEntities);
     }
 
     public override async Task<Character> Get(long charId)
     {
-        return await _characterRepository.GetAsync(charId);
+        var characterEntities = await _characterRepository.Get();
+        return _mapper.Map<Character>(characterEntities);
     }
 
-    public async Task<Character> CreateCharacter(long userId, Character character)
+    public async Task<Character> CreateCharacter(long userId, Character characterDto)
     {
-        return await _characterRepository.CreateCharacter(userId, character);
+        return await _characterRepository.CreateCharacter(userId, characterDto);
     }
 
-    public override async Task<Character> Update(Character character)
+    public override async Task<Character> Update(Character characterDto)
     {
-        return await _characterRepository.UpdateAsync(character);
+        return await _characterRepository.Update(characterDto);
     }
 
     public async Task<Character> Remove(long charId)
     {
-        var character = await _characterRepository.GetAsync(charId);
-        if (character != null)
+        var characterDto = await _characterRepository.Get(charId);
+        if (characterDto != null)
         {
-            return await _characterRepository.RemoveAsync(character);
+            return await _characterRepository.Remove(characterDto);
         }
         return null;
     }

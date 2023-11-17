@@ -23,54 +23,38 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
         _dapperContext = dapperContext;
     }
 
-    public async Task<Character> CreateCharacter(long userId, Character character)
+    public async Task<IEnumerable<Character>> Get()
     {
-        try
+        string query = @"select 
+                                o.CharId,
+                                o.CharName,
+                                o.CharClass,
+                                o.CharSex,
+                                o.ClassId,
+                                o.UserId  
+                                from Charact o with (nolock)";
+        using (var connection = _dapperContext.CreateConnection())
         {
-            // Tenta encontrar um usuário com o userId especificado no banco de dados.
-            var user = await _context.Users.FindAsync(userId);
-            if (user != null)
-            {
-                // Chama o método de validação para garantir que as entradas do personagem sejam válidas.
-                ValidateCharacterInputs(character);
-
-                // Define o status do personagem e chama a classe (por exemplo, 1 = Assassin)
-                character.UserId = userId;
-                var characterClassType = GetCharacterClassType(character.ClassType);
-                var characterInfo = Activator.CreateInstance(characterClassType) as CharactersInfo;
-                characterInfo.InitializeStats();
-                character.CharStatus = characterInfo;
-
-                // Use comandos SQL para inserir o personagem
-                string insertQuery = @"INSERT INTO Charact (CharName, CharClass, CharSex, ClassId, UserId)
-                                   VALUES (@CharName, @CharClass, @CharSex, @ClassId, @UserId);
-                                   SELECT SCOPE_IDENTITY();";
-
-                using (var connection = _dapperContext.CreateConnection())
-                {
-                    // Execute o comando SQL e obtenha o ID do personagem recém-criado
-                    long newCharId = await connection.ExecuteScalarAsync<long>(insertQuery, new
-                    {
-                        CharName = character.CharName,
-                        CharClass = character.ClassType.ToString(),
-                        CharSex = character.CharSex.ToString(),
-                        ClassId = character.ClassId,
-                        UserId = character.UserId
-                    });
-
-                    // Atribua o ID gerado ao objeto Character
-                    character.CharId = newCharId;
-                }
-
-                return character;
-            }
-
-            return null;
+            return await connection.QueryAsync<Character>(query);
         }
-        catch (Exception ex)
+
+    }
+
+    public override async Task<Character> Get(long charId)
+    {
+        string query = @"select 
+                                o.CharId,
+                                o.CharName,
+                                o.CharClass,
+                                o.CharSex,
+                                o.ClassId,
+                                o.UserId
+                                from Charact o with (nolock)
+                                Where CharId = @CharId";
+
+        using (var connection = _dapperContext.CreateConnection())
         {
-            _logger.LogError(ex, "Erro em criar personagem.");
-            throw;
+            return await connection.QueryFirstOrDefaultAsync<Character>(query, new { CharId = charId });
         }
     }
 
@@ -104,43 +88,69 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
 
         return null;
     }
-
-    public async Task<IEnumerable<Character>> Get()
+    public async Task<Character> CreateCharacter(long userId, Character character)
     {
-        string query = @"select 
-                                o.CharId,
-                                o.CharName,
-                                o.CharClass,
-                                o.CharSex,
-                                o.ClassId,
-                                o.UserId  
-                                from Charact o with (nolock)";
-        using (var connection = _dapperContext.CreateConnection())
+        using (var transaction = _context.Database.BeginTransaction())
         {
-            return await connection.QueryAsync<Character>(query);
-        }
+            try
+            {
 
+                if (character == null)
+                {
+                    throw new ArgumentNullException(nameof(character), "Objeto de personagem não pode ser nulo.");
+                }
+
+                // Tenta encontrar um usuário com o userId especificado no banco de dados.
+                var user = await _context.Users.FindAsync(userId);
+                if (user != null)
+                {
+                    // Chama o método de validação para garantir que as entradas do personagem sejam válidas.
+                    ValidateCharacterInputs(character);
+
+                    // Define o status do personagem e chama a classe (por exemplo, 1 = Assassin)
+                    character.UserId = userId;
+                    var characterClassType = GetCharacterClassType(character.ClassType);
+                    var characterInfo = Activator.CreateInstance(characterClassType) as CharactersInfo;
+                    characterInfo.InitializeStats();
+                    character.CharStatus = characterInfo;
+
+                    // Use comandos SQL para inserir o personagem
+                    string insertQuery = @"INSERT INTO Charact (CharName, CharClass, CharSex, ClassId, UserId)
+                                   VALUES (@CharName, @CharClass, @CharSex, @ClassId, @UserId);
+                                   SELECT SCOPE_IDENTITY();";
+
+                    using (var connection = _dapperContext.CreateConnection())
+                    {
+                        // Execute o comando SQL e obtenha o ID do personagem recém-criado
+                        long newCharId = await connection.ExecuteScalarAsync<long>(insertQuery, new
+                        {
+                            CharName = character.CharName,
+                            CharClass = character.ClassType.ToString(),
+                            CharSex = character.CharSex.ToString(),
+                            ClassId = character.ClassId,
+                            UserId = character.UserId
+                        });
+
+                        // Atribua o ID gerado ao objeto Character
+                        character.CharId = newCharId;
+                    }
+
+                    transaction.Commit();
+                    return character;
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                _logger.LogError(ex, "Erro em criar personagem.");
+                throw;
+            }
+        }
     }
 
-    public override async Task<Character> GetAsync(long charId)
-    {
-        string query = @"select 
-                                o.CharId,
-                                o.CharName,
-                                o.CharClass,
-                                o.CharSex,
-                                o.ClassId,
-                                o.UserId
-                                from Charact o with (nolock)
-                                Where CharId = @CharId";
-
-        using (var connection = _dapperContext.CreateConnection())
-        {
-            return await connection.QueryFirstOrDefaultAsync<Character>(query, new { CharId = charId });
-        }
-    }
-
-    public virtual async Task<Character> UpdateAsync(Character character)
+    public virtual async Task<Character> Update(Character character)
     {
         string query = @" Update Charact
                               Set CharName = @CharName,                                  
@@ -166,7 +176,7 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
     }
 
 
-    public async Task<Character> RemoveAsync(Character character)
+    public async Task<Character> Remove(Character character)
     {
         string query = @" Delete From Charact Where CharId = @CharId";
 
