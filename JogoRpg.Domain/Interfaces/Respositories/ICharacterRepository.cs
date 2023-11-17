@@ -2,8 +2,8 @@
 
 namespace JogoRpg.Domain.Interface.Repositories;
 
-public interface ICharacterRepository : IBaseRepository<Character>
+public interface ICharacterRepository : IBaseRepository<CharacterDTO>
 {
-    Task<Character> CreateCharacter(long userId, Character character);
+    Task<CharacterDTO> CreateCharacter(long userId, CharacterDTO character);
 }
 

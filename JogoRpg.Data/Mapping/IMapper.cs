@@ -14,10 +14,10 @@ public class MeuServico
         _context = context;
     }
 
-    public CharacterDTO ObterCharacterDTO(int characterId)
+    public JogoRpg.Domain.DTO.CharacterDTO ObterCharacterDTO(int characterId)
     {
-        Character character = _context.Characters.FirstOrDefault(c => c.CharId == characterId);
-        CharacterDTO characterDTO = _mapper.Map<CharacterDTO>(character);
+        JogoRpg.Domain.Entities.CharacterDTO character = _context.Characters.FirstOrDefault(c => c.CharId == characterId);
+        JogoRpg.Domain.DTO.CharacterDTO characterDTO = _mapper.Map<JogoRpg.Domain.DTO.CharacterDTO>(character);
 
         return characterDTO;
     }

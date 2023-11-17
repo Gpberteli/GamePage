@@ -29,6 +29,11 @@ public class BaseService<TEntity> : IDisposable, IBaseService<TEntity> where TEn
 
     public virtual async Task<TEntity> Update(TEntity obj)
     {
+        if (obj == null)
+        {
+            throw new ArgumentNullException(nameof(obj), "O objeto para atualização não pode ser nulo.");
+        }
+
         return await _repository.Update(obj);
     }
 

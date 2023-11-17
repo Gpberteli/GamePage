@@ -1,5 +1,7 @@
-﻿using JogoRpg.Data.Context;
+﻿using Dapper;
+using JogoRpg.Data.Context;
 using JogoRpg.Data.Repositories;
+using JogoRpg.Domain.DTO;
 using JogoRpg.Domain.Entities;
 using JogoRpg.Domain.Interface.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -18,68 +20,122 @@ public class UserRepository : BaseRepository<User>, IUserRepository
         _dapperContext = dapperContext;
     }
 
-    public IEnumerable<User> Get()
+    public IEnumerable<UserDTO> Get()
     {
-        return _context.Users.ToList();
-    }
+        string query = "SELECT UserId, UserName, NickName, UserEmail FROM Users";
 
-    public async Task<User> Get(long userId)
-    {
-        return await _context.Users.FindAsync(userId);
-    }
-
-    public async Task<User> GetUserWithCharacters(long userId)
-    {
-        return _context.Users.Include(u => u.Characters).FirstOrDefault(u => u.UserId == userId);
-    }
-
-
-    public async Task<User> Add(User user)
-    {
-        try
+        using (var connection = _dapperContext.CreateConnection())
         {
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
+            return connection.Query<UserDTO>(query);
+        }
+    }
+
+    public UserDTO Get(long userId)
+    {
+        string query = "SELECT UserId, UserName, NickName, UserEmail FROM Users WHERE UserId = @UserId";
+
+        using (var connection = _dapperContext.CreateConnection())
+        {
+            return connection.QueryFirstOrDefault<UserDTO>(query, new { UserId = userId });
+        }
+    }
+
+
+    public async Task<UserDTO> Add(UserCreateDTO userCreateDTO)
+    {
+        if (userCreateDTO == null)
+        {
+            throw new ArgumentNullException(nameof(userCreateDTO), "Objeto de usuário para adição não pode ser nulo.");
+        }
+
+        // Hash da senha
+        string hashedPassword = HashAndSaltPassword(userCreateDTO.UserPassword);
+
+        string query = @"INSERT INTO Users (UserName, NickName, UserEmail, UserPassword)
+                         VALUES (@UserName, @NickName, @UserEmail, @UserPassword);
+                         SELECT SCOPE_IDENTITY();";
+
+        using (var connection = _dapperContext.CreateConnection())
+        {
+            // Execute o comando SQL e obtenha o ID do usuário recém-adicionado
+            long newUserId = await connection.ExecuteScalarAsync<long>(query, new
+            {
+                UserName = userCreateDTO.UserName,
+                NickName = userCreateDTO.NickName,
+                UserEmail = userCreateDTO.UserEmail,
+                UserPassword = hashedPassword
+            });
+
+            // Retorne o DTO com o ID gerado
+            return new UserDTO
+            {
+                UserId = newUserId,
+                UserName = userCreateDTO.UserName,
+                NickName = userCreateDTO.NickName,
+                UserEmail = userCreateDTO.UserEmail
+            };
+        }
+    }
+
+    public override async Task<UserDTO> Update(UserDTO user)
+    {
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user), "Objeto de usuário para atualização não pode ser nulo.");
+        }
+
+        string query = @"UPDATE Users
+                     SET UserName = @UserName,
+                         NickName = @NickName,
+                         UserEmail = @UserEmail
+                     WHERE UserId = @UserId";
+
+        using (var connection = _dapperContext.CreateConnection())
+        {
+            await connection.ExecuteAsync(query, new
+            {
+                UserName = user.UserName,
+                NickName = user.NickName,
+                UserEmail = user.UserEmail,
+                UserId = user.UserId
+            });
+
             return user;
         }
-        catch (DbUpdateException ex)
-        {
-            _logger.LogError(ex, "Erro ao adicionar usuário ao banco de dados.");
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro não tratado ao adicionar usuário ao banco de dados.");
-            throw;
-        }
     }
 
-    public async Task<User> Update(User user)
-    {
-        _context.Entry(user).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-        return user;
-    }
+    // Adicione outros métodos conforme necessário, utilizando Dapper para as operações no banco de dados.
+
     public async Task<User> Remove(long userId)
     {
-        var user = await _context.Users.FindAsync(userId);
-        if (user != null)
+        string query = "DELETE FROM Users WHERE UserId = @UserId";
+
+        using (var connection = _dapperContext.CreateConnection())
         {
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            await connection.ExecuteAsync(query, new { UserId = userId });
         }
-        return user;
+
+        return null; // Você pode retornar o usuário removido se necessário
     }
 
     public async Task<User> Authenticate(string username, string password)
     {
-        var hashedPassword = HashAndSaltPassword(password);
-        return _context.Users.FirstOrDefault(u => u.UserName == username && u.UserPassword == hashedPassword);
+        string hashedPassword = HashAndSaltPassword(password);
+
+        string query = "SELECT * FROM Users WHERE UserName = @UserName AND UserPassword = @UserPassword";
+
+        using (var connection = _dapperContext.CreateConnection())
+        {
+            return await connection.QueryFirstOrDefaultAsync<User>(query, new
+            {
+                UserName = username,
+                UserPassword = hashedPassword
+            });
+        }
     }
+
     private string HashAndSaltPassword(string password)
     {
         return BCrypt.Net.BCrypt.HashPassword(password);
     }
-
 }
-

@@ -7,6 +7,6 @@ public class User
     public string? NickName { get; set; }
     public string? UserEmail { get; set; }
     public string? UserPassword { get; private set; }
-    public List<Character>? Characters { get; set; }
+    public List<CharacterDTO>? Characters { get; set; }
 
 }

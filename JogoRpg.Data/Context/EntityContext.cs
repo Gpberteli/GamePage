@@ -12,14 +12,14 @@ namespace JogoRpg.Data.Context
             : base(options){ }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Character> Characters { get; set; }
+        public DbSet<CharacterDTO> Characters { get; set; }
         public DbSet<ClassReference> ClassReferences { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Character>()
+            modelBuilder.Entity<CharacterDTO>()
                 .Property(p => p.CharSex)
                 .HasConversion<string>();
 
@@ -30,7 +30,7 @@ namespace JogoRpg.Data.Context
                 entity.Property(e => e.ClassName).IsRequired().HasMaxLength(100);
             });
 
-            modelBuilder.Entity<Character>(entity =>
+            modelBuilder.Entity<CharacterDTO>(entity =>
             {
                 entity.ToTable("Charact");
                 entity.HasKey(e => e.CharId);

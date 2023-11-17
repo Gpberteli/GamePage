@@ -69,7 +69,7 @@ public class CharacterController : ControllerBase
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<IActionResult> CreateCharacter(long userId, [FromBody] Character character)
+    public async Task<IActionResult> CreateCharacter(long userId, [FromBody] CharacterDTO character)
     {
         var createdCharacter = await _characterService.CreateCharacter(userId, character);
 
@@ -91,7 +91,7 @@ public class CharacterController : ControllerBase
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [HttpPut("{id}")]
-    public async Task<IActionResult> Put(long id, [FromBody] Character character)
+    public async Task<IActionResult> Put(long id, [FromBody] CharacterDTO character)
     {
         try
         {

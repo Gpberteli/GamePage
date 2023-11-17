@@ -10,7 +10,7 @@ using static Dapper.SqlMapper;
 
 namespace JogoRpg.Data.Repositories;
 
-public class CharacterRepository : BaseRepository<Character>, ICharacterRepository
+public class CharacterRepository : BaseRepository<CharacterDTO>, ICharacterRepository
 {
     private readonly ILogger<CharacterRepository> _logger;
     private readonly EntityContext _context;
@@ -23,7 +23,7 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
         _dapperContext = dapperContext;
     }
 
-    public async Task<IEnumerable<Character>> Get()
+    public async Task<IEnumerable<CharacterDTO>> Get()
     {
         string query = @"select 
                                 o.CharId,
@@ -35,12 +35,12 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
                                 from Charact o with (nolock)";
         using (var connection = _dapperContext.CreateConnection())
         {
-            return await connection.QueryAsync<Character>(query);
+            return await connection.QueryAsync<CharacterDTO>(query);
         }
 
     }
 
-    public override async Task<Character> Get(long charId)
+    public override async Task<CharacterDTO> Get(long charId)
     {
         string query = @"select 
                                 o.CharId,
@@ -54,11 +54,11 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
 
         using (var connection = _dapperContext.CreateConnection())
         {
-            return await connection.QueryFirstOrDefaultAsync<Character>(query, new { CharId = charId });
+            return await connection.QueryFirstOrDefaultAsync<CharacterDTO>(query, new { CharId = charId });
         }
     }
 
-    private void ValidateCharacterInputs(Character character)
+    private void ValidateCharacterInputs(CharacterDTO character)
     {
         if (string.IsNullOrWhiteSpace(character.CharName))
         {
@@ -88,7 +88,7 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
 
         return null;
     }
-    public async Task<Character> CreateCharacter(long userId, Character character)
+    public async Task<CharacterDTO> CreateCharacter(long userId, CharacterDTO character)
     {
         using (var transaction = _context.Database.BeginTransaction())
         {
@@ -150,8 +150,12 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
         }
     }
 
-    public virtual async Task<Character> Update(Character character)
+    public virtual async Task<CharacterDTO> Update(CharacterDTO character)
     {
+        if (character == null)
+        {
+            throw new ArgumentNullException(nameof(character), "Objeto de personagem para atualização não pode ser nulo.");
+        }
         string query = @" Update Charact
                               Set CharName = @CharName,                                  
                                   CharClass = @CharClass,
@@ -176,16 +180,27 @@ public class CharacterRepository : BaseRepository<Character>, ICharacterReposito
     }
 
 
-    public async Task<Character> Remove(Character character)
+    public async Task<CharacterDTO> Remove(CharacterDTO character)
     {
-        string query = @" Delete From Charact Where CharId = @CharId";
-
-
-        using (var connection = _dapperContext.CreateConnection())
+        using (var transaction = _context.Database.BeginTransaction())
         {
-            await connection.ExecuteAsync(query, character);
-            return character;
+            try
+            {
+                // Utilize comandos SQL para remover o personagem
+                string deleteQuery = "DELETE FROM Charact WHERE CharId = @CharId";
+
+                using (var connection = _dapperContext.CreateConnection())
+                {
+                    await connection.ExecuteAsync(deleteQuery, new { CharId = character.CharId });
+                }
+
+                transaction.Commit();
+                return character;
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw ex;
+            }
         }
     }
-
-}

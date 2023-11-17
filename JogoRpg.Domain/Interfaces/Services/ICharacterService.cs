@@ -3,9 +3,10 @@ using JogoRpg.Domain.Entities;
 
 namespace JogoRpg.Domain.Interface.Services;
 
-public interface ICharacterService : IBaseService<Character>
+public interface ICharacterService : IBaseService<DTO.CharacterDTO>
 {
-    Task<IEnumerable<Character>> Get();
-    Task<Character> Remove(long charId);
-    Task<Character> CreateCharacter(long userId, Character character);
+    Task<DTO.CharacterDTO> CreateCharacter(long userId, DTO.CharacterDTO characterDto);
+    Task<IEnumerable<DTO.CharacterDTO>> Get();
+    Task<DTO.CharacterDTO> Remove(long charId);
+
 }

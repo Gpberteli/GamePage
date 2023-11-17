@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace JogoRpg.Domain.Entities;
 
-public class Character
+public class CharacterDTO
 {
     public long CharId { get; set; }
     public string? CharName { get; set; }
