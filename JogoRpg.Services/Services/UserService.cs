@@ -1,43 +1,36 @@
-﻿using System.Threading.Tasks;
-using JogoRpg.Domain.Entities;
+﻿using AutoMapper;
+using JogoRpg.Domain.DTO;
 using JogoRpg.Domain.Interface.Repositories;
 using JogoRpg.Domain.Interface.Services;
-using JogoRpg.Services.Services;
 
-namespace JogoRpg.Service.Services;
-
-public class UserService : BaseService<User>, IUserService
+namespace JogoRpg.Services.Services
 {
-    private readonly IUserRepository _userRepository;
-
-    public UserService(IUserRepository userRepository)
-        : base(userRepository)
+    public class UserService : BaseService<UserDTO>, IUserService
     {
-        _userRepository = userRepository;
-    }
+        private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
 
-    public async Task<User> GetUserWithCharacters(long userId)
-    {
-        return await _userRepository.GetUserWithCharacters(userId);
-    }
+        public UserService(IUserRepository userRepository, IMapper mapper)
+            : base(userRepository)
+        {
+            _userRepository = userRepository;
+            _mapper = mapper;
+        }
 
-    public override async Task<User> Add(User user)
-    {
-        return await _userRepository.Add(user);
-    }
+        public async Task<UserDTO> GetUserWithCharacters(long userId)
+        {
+            var userEntity = await _userRepository.GetUserWithCharacters(userId);
+            return _mapper.Map<UserDTO>(userEntity);
+        }
 
-    public override async Task<User> Get(long userId)
-    {
-        return await _userRepository.Get(userId);
-    }
-
-    public override async Task<User> Update(User user)
-    {
-        return await _userRepository.Update(user);
-    }
-
-    public async Task<User> Remove(long userId)
-    {
-        return await _userRepository.Remove(userId);
+        public override async Task<UserDTO> Remove(long userId)
+        {
+            var userDto = await _userRepository.Get(userId);
+            if (userDto != null)
+            {
+                return _mapper.Map<UserDTO>(await _userRepository.Remove(userDto));
+            }
+            return null;
+        }
     }
 }
